@@ -46,9 +46,9 @@ Image.fromarray(a_arr).save(op.join('examples', 'a2_locs.png'))
 # %% Example 4 - cat
 
 cat = Image.open(op.join('img', 'cat.png'))
-cat1 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=127)[0]
-cat2 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=0)[0]
-cat3 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=[127, 0, 127])[0]
+cat1 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=127)[0]
+cat2 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=0)[0]
+cat3 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=[127, 0, 127])[0]
 
 cat1.save(op.join('examples', 'cat1.png'))
 cat2.save(op.join('examples', 'cat2.png'))

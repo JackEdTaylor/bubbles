@@ -122,9 +122,9 @@ Typical stimuli using the Bubbles technique use artificial stimuli on grey backg
 ```python
 cat = Image.open(op.join('img', 'cat.jpg'))
 
-cat1 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=127)[0]
-cat2 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=0)[0]
-cat3 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=[127, 0, 127])[0]
+cat1 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=127)[0]
+cat2 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=0)[0]
+cat3 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(10, 20), bg=[127, 0, 55])[0]
 
 cat.show(); cat1.show(); cat2.show(); cat3.show()
 ```
