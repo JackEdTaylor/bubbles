@@ -82,7 +82,7 @@ It is often more efficient to avoid adding bubbles to regions that you know have
 
 Specifically, the centres of each bubble (`mu_x`, `mu_y`) will be within `max_sigma_from_nonzero` multiples of that bubble's `sigma` value from a non-background pixel. Background pixels are identified as `im <= bg`.
 
-The usage is similar to `bubbles_mask()`, but with additional argument `max_sigma_from_nonzero`.
+The usage is similar to `bubbles_mask()`, but with additional argument `max_sigma_from_nonzero`. Here, we use 4 bubbles and specify that the centre of each bubble should be no more than 2 standard deviations away from the non-background pixels of the letter *a*.
 
 ```python
 a = Image.open(op.join('img', 'a.png'))
