@@ -14,8 +14,9 @@ face1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask(im=face, sigma=[20,20,20,2
 
 face1.save(op.join('examples', 'face1.png'))
 
-fig = plt.figure(figsize=(3, 5))
+fig = plt.figure(figsize=(4.35, 5))
 plt.imshow(mask)
+plt.colorbar()
 fig.savefig(op.join('examples', 'face1_mask.png'), dpi=100, bbox_inches='tight')
 
 # %% Example 2 - face's eyes

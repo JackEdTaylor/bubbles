@@ -31,6 +31,7 @@ The function also outputs the mask as a `numpy` array.
 ```python
 import matplotlib.pyplot as plt
 plt.imshow(mask)
+plt.colorbar()
 ```
 
 ![](examples/face1_mask.png)
