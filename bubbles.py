@@ -50,7 +50,7 @@ def apply_mask(im, mask, bg=0):
      Keyword arguments:
     im -- the original image
     mask -- the mask to apply to the image
-    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB
+    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values for RGBA
     """
     
     sh = np.asarray(im).shape
@@ -85,7 +85,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0
     mu_x -- x indices (axis 1 in numpy) for bubble locations - set to None (default) for random location
     mu_y -- y indices (axis 0 in numpy) for bubble locations - set to None (default) for random location
     sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from this array
-    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB
+    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values, for RGBA
     scale -- should densities' maxima be consistently scaled across different sigma values?
     """
     
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     
     parser.add_argument('-y', '--mu_y', nargs='+', help='y indices (axis 0 in numpy) for bubble locations, in space-separated format - leave blank (default) for random location', type=float)
     
-    parser.add_argument('-b', '--background', help='the desired background for the image, from 0 to 255 (default=0)',
+    parser.add_argument('-b', '--background', nargs='+', help='the desired background for the image, as a single integer from 0 to 255 (default=0), or space-separated values for each channel in the image',
                         action='store', type=int, default=0)
     
     parser.add_argument('--unscaled', help='do not scale the densities of the bubbles to have the same maxima',

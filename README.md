@@ -10,6 +10,7 @@ All functions are provided in module `bubbles.py`
 
 ```python
 import bubbles
+import os.path as op
 from PIL import Image
 ```
 
@@ -62,10 +63,13 @@ print(sigma)
 
 ## Specifying Bubble Locations
 
-By default, `bubbles_mask()` will position bubbles randomly in the image. The exact desired locations of bubbles can be specified via the `mu_x` and `mu_y` arguments. Here I specify a bubble to be centred on the left eye. Note that `mu_x` and `mu_y` can be floats.
+By default, `bubbles_mask()` will position bubbles randomly in the image. The exact desired locations of bubbles can be specified via the `mu_x` and `mu_y` arguments. Here I specify two bubbles to be centred on eyes, with different sigma values, of 20 and 10. Note that `mu_x` and `mu_y` can be floats.
 
 ```python
-face2 = bubbles.bubbles_mask(im=face, mu_x=[85], mu_y=[182.5], sigma=[20], bg=127)[0]
+face2 = bubbles.bubbles_mask(
+    im=face, mu_x=[85, 186.7], mu_y=[182.5, 182.5], sigma=[20, 10], bg=127
+)[0]
+
 face2.show()
 ```
 
@@ -84,7 +88,7 @@ The usage is similar to `bubbles_mask()`, but with additional argument `max_sigm
 a = Image.open(op.join('img', 'a.png'))
 
 a1 = bubbles.bubbles_mask_nonzero(
-    im=a, sigma=[10,10,10,10,10], bg=127, max_sigma_from_nonzero=2
+    im=a, sigma=[10,10,10,10], bg=127, max_sigma_from_nonzero=2
 )[0]
 
 a.show(); a1.show()
@@ -110,6 +114,25 @@ Image.fromarray(a_arr).show()
 ![](examples/a2_locs.png)
 
 Note: you can also specify a reference image, `ref_im`, from which the background pixels in `im` should be identified. This is useful in cases where `im` has already been altered (e.g., phase-randomised).
+
+## Naturalistic Images
+
+Typical stimuli using the Bubbles technique use artificial stimuli on grey backgrounds, but this method can also be applied to more naturalistic, colour stimuli, with the background defined by the `bg` argument.
+
+```python
+cat = Image.open(op.join('img', 'cat.jpg'))
+
+cat1 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=127)[0]
+cat2 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=0)[0]
+cat3 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=[127, 0, 127])[0]
+
+cat.show(); cat1.show(); cat2.show(); cat3.show()
+```
+
+![](img/cat.png)
+![](examples/cat1.png)
+![](examples/cat2.png)
+![](examples/cat3.png)
 
 ## Command Line Interface
 

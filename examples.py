@@ -18,16 +18,16 @@ fig = plt.figure(figsize=(0.8, 1.2))
 plt.imshow(mask)
 fig.savefig(op.join('examples', 'face1_mask.png'), dpi=300, bbox_inches='tight')
 
-# %% Example 2 - face's eye
+# %% Example 2 - face's eyes
 
-face2 = bubbles.bubbles_mask(im=face, mu_x=[85], mu_y=[182.5], sigma=[20], bg=127)[0]
+face2 = bubbles.bubbles_mask(im=face, mu_x=[85, 186.7], mu_y=[182.5, 182.5], sigma=[20, 10], bg=127)[0]
 face2.save(op.join('examples', 'face2.png'))
 
 # %% Example 3 - letter a
 
 a = Image.open(op.join('img', 'a.png'))
 
-a1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask_nonzero(im=a, sigma=[10,10,10,10,10], bg=127, max_sigma_from_nonzero=2)
+a1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask_nonzero(im=a, sigma=[10,10,10,10], bg=127, max_sigma_from_nonzero=2)
 
 a1.save(op.join('examples', 'a1.png'))
 
@@ -43,4 +43,14 @@ a_arr[:,:,1] = 0
 a_arr[:,:,2] = mask * 255
 Image.fromarray(a_arr).save(op.join('examples', 'a2_locs.png'))
 
+# %% Example 4 - cat
+
+cat = Image.open(op.join('img', 'cat.png'))
+cat1 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=127)[0]
+cat2 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=0)[0]
+cat3 = bubbles.bubbles_mask(im=cat, sigma=np.repeat(25, 10), bg=[127, 0, 127])[0]
+
+cat1.save(op.join('examples', 'cat1.png'))
+cat2.save(op.join('examples', 'cat2.png'))
+cat3.save(op.join('examples', 'cat3.png'))
 
