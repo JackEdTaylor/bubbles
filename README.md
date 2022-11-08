@@ -145,9 +145,9 @@ python bubbles.py --help
 
 ```
 usage: bubbles.py [-h] -i INPUT -o OUTPUT -s SIGMA [SIGMA ...] [-x MU_X [MU_X ...]] [-y MU_Y [MU_Y ...]]
-                  [-b BACKGROUND] [--unscaled] [--seed SEED]
+                  [-b BACKGROUND [BACKGROUND ...]] [--unscaled] [--maxmerge] [--seed SEED]
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
                         the file path for the input image
@@ -161,8 +161,12 @@ options:
   -y MU_Y [MU_Y ...], --mu_y MU_Y [MU_Y ...]
                         y indices (axis 0 in numpy) for bubble locations, in space-separated format - leave
                         blank (default) for random location
-  -b BACKGROUND, --background BACKGROUND
-                        the desired background for the image, from 0 to 255 (default=0)
+  -b BACKGROUND [BACKGROUND ...], --background BACKGROUND [BACKGROUND ...]
+                        the desired background for the image, as a single integer from 0 to 255 (default=0), or
+                        space-separated values for each channel in the image
   --unscaled            do not scale the densities of the bubbles to have the same maxima
+  --maxmerge            should merges, where bubbles overlap, be completed using a simple max of the two
+                        bubbles? If not (the default), distributions are instead summed, and then thresholded
+                        to the maxima of the pre-merged bubbles.
   --seed SEED           random seed to use
 ```

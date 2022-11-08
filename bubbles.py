@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import norm
 from skimage.morphology import binary_dilation
 
-def build_mask(mu_y, mu_x, sigma, sh, scale):
+def build_mask(mu_y, mu_x, sigma, sh, scale, max_merge=False):
     """Build a Bubbles mask which can be applied to an image of shape `sh`. Returns a matrix for the mask.
     
      Keyword arguments:
@@ -12,6 +12,7 @@ def build_mask(mu_y, mu_x, sigma, sh, scale):
     sigma -- array of sigmas for the spread of the bubbles (should be same len as mu_y)
     sh -- shape (np.shape) of the desired mask (usually the shape of the respective image)
     scale -- should densities' maxima be consistently scaled across different sigma values?
+    max_merge -- should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If False (the default), distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.
     """
     # check lengths match and are all 1d
     gauss_pars_sh = [np.shape(x) for x in [mu_y, mu_x, sigma]]
@@ -33,10 +34,16 @@ def build_mask(mu_y, mu_x, sigma, sh, scale):
     # scale if requested
     if scale:
         dists = [x/np.max(x) for x in dists]
-        
-    # build mask from list of bubbles
-    mask = np.max(dists, axis=0)
     
+    if max_merge:
+        # build mask from list of bubbles
+        mask = np.max(dists, axis=0)
+        
+    else:
+        # sum the distributions, then threshold the maximum to the maximum peak
+        mask = np.sum(dists, axis=0)
+        mask[mask>np.max(dists)] = np.max(dists)
+        
     # scale density to within [0, 1] (will already be scaled to [0, 1] above if scale==True)
     if not scale:
         mask /= np.max(mask)
@@ -194,6 +201,9 @@ if __name__ == "__main__":
     parser.add_argument('--unscaled', help='do not scale the densities of the bubbles to have the same maxima',
                         action='store_false')
     
+    parser.add_argument('--maxmerge', help='should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If not (the default), distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.',
+                        action='store_true')
+    
     parser.add_argument('--seed', help='random seed to use', action='store', type=int)
     
     args = parser.parse_args()
@@ -202,7 +212,7 @@ if __name__ == "__main__":
         np.random.seed(args.seed)
     
     im = Image.open(args.input)
-    im_out = bubbles_mask(im=im, mu_x=args.mu_x, mu_y=args.mu_y, sigma=args.sigma, bg=args.background, scale=args.unscaled)[0]
+    im_out = bubbles_mask(im=im, mu_x=args.mu_x, mu_y=args.mu_y, sigma=args.sigma, bg=args.background, scale=args.unscaled, max_merge=args.maxmerge)[0]
     im_out.save(args.output)
     
     
