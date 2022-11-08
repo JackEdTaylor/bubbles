@@ -137,7 +137,7 @@ cat.show(); cat1.show(); cat2.show(); cat3.show()
 
 ## Bubble Merging Method
 
-An advantage of this approach is that bubbles of different sizes can be merged. An alternative approach would convolution of *mu* locations with a gaussian kernel. By default, this implementation sums the bubbles, and applies a threshold, which was the pre-sum maximum across the bubbles. An alternative may be to take the maximum. Similarly, the method scales bubbles by default, where an alternative would be to leave the bubbles unscaled.
+An advantage of this approach is that bubbles of different sizes can be merged. An alternative approach could be convolution of a binary matrix for the *mu* locations with a gaussian kernel. By default, this implementation sums the bubbles, and applies a threshold, which was the pre-sum maximum across the bubbles. An alternative may be to take the maximum. Similarly, the method scales bubbles by default, where an alternative would be to leave the bubbles unscaled.
 
 Here is a visualisation of the possible options in mask construction, using `max_merge` and `scale` arguments, which can be passed to `bubble_mask()`:
 
