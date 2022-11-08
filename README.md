@@ -135,6 +135,35 @@ cat.show(); cat1.show(); cat2.show(); cat3.show()
 ![](examples/cat2.png)
 ![](examples/cat3.png)
 
+## Bubble Merging Method
+
+An advantage of this approach is that bubbles of different sizes can be merged. An alternative approach would convolution of *mu* locations with a gaussian kernel. By default, this implementation sums the bubbles, and applies a threshold, which was the pre-sum maximum across the bubbles. An alternative may be to take the maximum. Similarly, the method scales bubbles by default, where an alternative would be to leave the bubbles unscaled.
+
+Here is a visualisation of the possible options in mask construction, using `max_merge` and `scale` arguments, which can be passed to `bubble_mask()`:
+
+```python
+# same bubble parameters for all masks
+mu_y = [20, 30, 70]
+mu_x = [20, 30, 90]
+sigma = [5, 10, 7.5]
+sh = (100, 100)
+
+# plot all mask options (the first is the default)
+masks = [bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=False),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=True),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, max_merge=False),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, max_merge=True)]
+
+for i in range(4):
+    plt.imshow(masks[i])
+    plt.colorbar()
+```
+
+![](examples/mask1.png)
+![](examples/mask2.png)
+![](examples/mask3.png)
+![](examples/mask4.png)
+
 ## Command Line Interface
 
 The `bubbles_mask()` function can be accessed from the command line. This requires an `input` argument for a file path to the original image, and an `--output` argument, to write the result to file.

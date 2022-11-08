@@ -55,3 +55,22 @@ cat1.save(op.join('examples', 'cat1.png'))
 cat2.save(op.join('examples', 'cat2.png'))
 cat3.save(op.join('examples', 'cat3.png'))
 
+# %% Example 5 - masks
+
+# same bubble parameters for all masks
+mu_y = [20, 30, 70]
+mu_x = [20, 30, 90]
+sigma = [5, 10, 7.5]
+sh = (100, 100)
+
+masks = [bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=False),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=True),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, max_merge=False),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, max_merge=True)]
+
+for i in range(4):
+    fig = plt.figure(figsize=(3, 2.5))
+    plt.imshow(masks[i])
+    plt.colorbar()
+    fig.savefig(op.join('examples', f'mask{i+1}.png'), dpi=100, bbox_inches='tight')
+

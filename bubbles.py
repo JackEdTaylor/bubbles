@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import norm
 from skimage.morphology import binary_dilation
 
-def build_mask(mu_y, mu_x, sigma, sh, scale, max_merge=False):
+def build_mask(mu_y, mu_x, sigma, sh, scale, max_merge):
     """Build a Bubbles mask which can be applied to an image of shape `sh`. Returns a matrix for the mask.
     
      Keyword arguments:
@@ -12,7 +12,7 @@ def build_mask(mu_y, mu_x, sigma, sh, scale, max_merge=False):
     sigma -- array of sigmas for the spread of the bubbles (should be same len as mu_y)
     sh -- shape (np.shape) of the desired mask (usually the shape of the respective image)
     scale -- should densities' maxima be consistently scaled across different sigma values?
-    max_merge -- should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If False (the default), distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.
+    max_merge -- should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If False, distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.
     """
     # check lengths match and are all 1d
     gauss_pars_sh = [np.shape(x) for x in [mu_y, mu_x, sigma]]
@@ -84,7 +84,7 @@ def apply_mask(im, mask, bg=0):
     return(im_out_mat)
 
 
-def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0, scale=True):
+def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0, scale=True, max_merge=False):
     """Apply the bubbles mask to a given PIL image. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
@@ -94,6 +94,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0
     sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from this array
     bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values, for RGBA
     scale -- should densities' maxima be consistently scaled across different sigma values?
+    max_merge -- should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If False (the default), distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.
     """
     
     n = len(sigma)  # get n bubbles
@@ -107,7 +108,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0
         mu_x = np.random.uniform(low=0, high=sh[1], size=n)
     
     # build mask
-    mask = build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale)
+    mask = build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale, max_merge=max_merge)
     
     # apply mask
     im_out_mat = apply_mask(im=im, mask=mask, bg=bg)
@@ -117,7 +118,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0
     return(im_out, mask, mu_x, mu_y, sigma)
 
 
-def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=0, scale=True, max_sigma_from_nonzero=np.Infinity):
+def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=0, scale=True, max_merge=False, max_sigma_from_nonzero=np.Infinity):
     """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im<=bg gives 0, else 1, so binary dilation can be applied. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
@@ -126,6 +127,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=
     sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from this array
     bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB
     scale -- should densities' maxima be consistently scaled across different sigma values?
+    max_merge -- should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If False (the default), distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.
     max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero (in practice, non-minimum) values that a bubble's centre can be. Can be `np.Infinity` for no restriction
     """
     
@@ -169,7 +171,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=
     mu_x = [int(poss_mu[i][1][mu_idx[i]]) for i in range(len(poss_mu))] + np.random.uniform(low=-0.5, high=0.5, size=len(mu_idx))
     
     # build mask
-    mask = build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale)
+    mask = build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale, max_merge=max_merge)
     
     # apply mask
     im_out_mat = apply_mask(im=im, mask=mask, bg=bg)
