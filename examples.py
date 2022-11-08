@@ -12,6 +12,10 @@ face = Image.open(op.join('img', 'face.png'))
 
 face1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask(im=face, sigma=[20,20,20,20,20], bg=127)
 
+print(mu_x)
+print(mu_y)
+print(sigma)
+
 face1.save(op.join('examples', 'face1.png'))
 
 fig = plt.figure(figsize=(4.35, 5))
