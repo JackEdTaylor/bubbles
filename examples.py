@@ -39,7 +39,7 @@ a1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask_nonzero(im=a, sigma=[10,10,10
 a1.save(op.join('examples', 'a1.png'))
 
 # demonstrate that the space is unused
-a2, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask_nonzero(im=a, sigma=np.repeat(5, repeats=100), bg=127, max_sigma_from_nonzero=0.2)
+a2, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask_nonzero(im=a, sigma=np.repeat(2, repeats=100), bg=127, max_sigma_from_nonzero=0.2)
 
 a2.save(op.join('examples', 'a2.png'))
 
