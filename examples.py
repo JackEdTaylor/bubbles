@@ -1,3 +1,5 @@
+# %% Setup
+
 from PIL import Image
 import os.path as op
 import numpy as np
@@ -74,7 +76,7 @@ masks = [bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=False),
 
 for i in range(4):
     fig = plt.figure(figsize=(3, 2.5))
-    plt.imshow(masks[i])
+    plt.imshow(masks[i], interpolation=None)
     plt.colorbar()
     fig.savefig(op.join('examples', f'mask{i+1}.png'), dpi=100, bbox_inches='tight')
 
