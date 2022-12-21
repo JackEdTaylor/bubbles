@@ -161,7 +161,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0
 
 
 def bubbles_conv_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0):
-    """Apply the bubbles mask generated via convolution to a given PIL image. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
+    """Apply a bubbles mask generated via convolution to a given PIL image. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
     im -- the PIL image to apply the bubbles mask to
