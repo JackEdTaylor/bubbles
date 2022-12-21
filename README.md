@@ -76,6 +76,51 @@ face2.show()
 
 ![](examples/face2.png)
 
+## Using a Convolution-Based Method
+
+Previous implementations I've seen have used a convolution-based approach, where bubble locations are convolved with a Gaussian kernel. This is also available, with the `build_conv_mask()` and `bubbles_conv_mask()` functions. Key differences are that:
+* Sigma values must be identical for all bubbles, as one kernel is applied globally
+* Locations of `x` and `y` must be integers (rounded if floats) so that bubble precision is limited by resolution of the image
+
+Here is a comparison of the methods:
+
+```python
+mu_x = [85, 21, 47, 254, 193]
+mu_y = [186, 102, 219, 63, 80]
+sigma = [20, 20, 20, 20, 20]
+
+# method using outer products of Gaussian densities
+face3a, mask3a, _, _, _ = bubbles.bubbles_mask(im=face, mu_x=mu_x, mu_y=mu_y, sigma=sigma, bg=127)
+
+# method using convolution with Gaussian kernel
+face3b, mask3b, _, _, _ = bubbles.bubbles_conv_mask(im=face, mu_x=mu_x, mu_y=mu_y, sigma=sigma, bg=127)
+
+# compare faces
+face3a.show(); face3b.show()
+```
+
+![](examples/face3a.png)
+![](examples/face3b.png)
+
+```python
+# compare masks
+plt.imshow(mask3a); plt.colorbar()
+plt.imshow(mask3b); plt.colorbar()
+```
+
+![](examples/face3a_mask.png)
+![](examples/face3b_mask.png)
+
+There are only small differences in the approaches, owing to (I think?) imprecision in the FFT:
+
+```python
+plt.imshow(mask3a-mask3b)
+plt.colorbar()
+```
+
+![](examples/face3_mask_diff.png)
+
+This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities is (a) more precise, and (b) supports bubbles of different sizes.
 
 ## Avoiding Uninformative Locations
 
@@ -137,9 +182,9 @@ cat.show(); cat1.show(); cat2.show(); cat3.show()
 
 ## Bubble Merging Method
 
-An advantage of this approach is that bubbles of different sizes can be merged. An alternative approach could be convolution of a binary matrix for the *mu* locations with a gaussian kernel. By default, this implementation sums the bubbles, and applies a threshold, which was the pre-sum maximum across the bubbles. An alternative may be to take the maximum. Similarly, the method scales bubbles by default, where an alternative would be to leave the bubbles unscaled.
+An advantage of this approach is that bubbles of different sizes can be merged. By default, this implementation averages the bubbles and scales the result to within [0, 1]. An alternative may be to take the sum and apply a threshold of the pre-sum maximum across the bubbles. Similarly, the method scales bubbles by default, so that bubbles of different sigma have equal maxima in their densities, where an alternative would be to leave the bubbles unscaled.
 
-Here is a visualisation of the possible options in mask construction, using `max_merge` and `scale` arguments, which can be passed to `bubble_mask()`:
+Here is a visualisation of the possible options in mask construction, using `sum_merge` and `scale` arguments, which can be passed to `bubble_mask()`:
 
 ```python
 # same bubble parameters for all masks
@@ -149,10 +194,10 @@ sigma = [5, 10, 7.5]
 sh = (100, 100)
 
 # plot all mask options (the first is the default)
-masks = [bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=False),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=True),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, max_merge=False),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, max_merge=True)]
+masks = [bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=False),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=True),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, sum_merge=False),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, sum_merge=True)]
 
 for i in range(4):
     plt.imshow(masks[i])
@@ -173,29 +218,31 @@ python bubbles.py --help
 ```
 
 ```
-usage: bubbles.py [-h] -i INPUT -o OUTPUT -s SIGMA [SIGMA ...] [-x MU_X [MU_X ...]] [-y MU_Y [MU_Y ...]]
-                  [-b BACKGROUND [BACKGROUND ...]] [--unscaled] [--maxmerge] [--seed SEED]
+usage: bubbles.py [-h] -i INPUT -o OUTPUT -s SIGMA [SIGMA ...] [-x MU_X [MU_X ...]]
+                  [-y MU_Y [MU_Y ...]] [-b BACKGROUND [BACKGROUND ...]] [--unscaled]
+                  [--summerge] [--seed SEED]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
                         the file path for the input image
   -o OUTPUT, --output OUTPUT
                         the path of the desired output file
   -s SIGMA [SIGMA ...], --sigma SIGMA [SIGMA ...]
-                        a list of sigmas for the bubbles, in space-separated format (e.g., "10 10 15")
+                        a list of sigmas for the bubbles, in space-separated format (e.g., "10
+                        10 15")
   -x MU_X [MU_X ...], --mu_x MU_X [MU_X ...]
-                        x indices (axis 1 in numpy) for bubble locations, in space-separated format - leave
-                        blank (default) for random location
+                        x indices (axis 1 in numpy) for bubble locations, in space-separated
+                        format - leave blank (default) for random location
   -y MU_Y [MU_Y ...], --mu_y MU_Y [MU_Y ...]
-                        y indices (axis 0 in numpy) for bubble locations, in space-separated format - leave
-                        blank (default) for random location
+                        y indices (axis 0 in numpy) for bubble locations, in space-separated
+                        format - leave blank (default) for random location
   -b BACKGROUND [BACKGROUND ...], --background BACKGROUND [BACKGROUND ...]
-                        the desired background for the image, as a single integer from 0 to 255 (default=0), or
-                        space-separated values for each channel in the image
+                        the desired background for the image, as a single integer from 0 to 255
+                        (default=0), or space-separated values for each channel in the image
   --unscaled            do not scale the densities of the bubbles to have the same maxima
-  --maxmerge            should merges, where bubbles overlap, be completed using a simple max of the two
-                        bubbles? If not (the default), distributions are instead summed, and then thresholded
-                        to the maxima of the pre-merged bubbles.
+  --summerge            sum_merge -- should merges, where bubbles overlap, be completed using a
+                        simple sum of the bubbles, thresholded to the maxima of the pre-merged
+                        bubbles? If not (the default), densities are instead averaged (mean).
   --seed SEED           random seed to use
 ```

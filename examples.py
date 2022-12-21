@@ -30,6 +30,33 @@ fig.savefig(op.join('examples', 'face1_mask.png'), dpi=100, bbox_inches='tight')
 face2 = bubbles.bubbles_mask(im=face, mu_x=[85, 186.7], mu_y=[182.5, 182.5], sigma=[20, 10], bg=127)[0]
 face2.save(op.join('examples', 'face2.png'))
 
+# %% Example 3 - compare to convolution method
+
+mu_x = [70, 21, 47, 254, 193]
+mu_y = [190, 102, 219, 63, 80]
+sigma = [20,20,20,20,20]
+
+face3a, mask3a, _, _, _ = bubbles.bubbles_mask(im=face, mu_x=mu_x, mu_y=mu_y, sigma=sigma, bg=127)
+face3b, mask3b, _, _, _ = bubbles.bubbles_conv_mask(im=face, mu_x=mu_x, mu_y=mu_y, sigma=sigma, bg=127)
+
+face3a.save(op.join('examples', 'face3a.png'))
+face3b.save(op.join('examples', 'face3b.png'))
+
+fig = plt.figure(figsize=(4.35, 5))
+plt.imshow(mask3a)
+plt.colorbar()
+fig.savefig(op.join('examples', 'face3a_mask.png'), dpi=80, bbox_inches='tight')
+
+fig = plt.figure(figsize=(4.35, 5))
+plt.imshow(mask3b)
+plt.colorbar()
+fig.savefig(op.join('examples', 'face3b_mask.png'), dpi=80, bbox_inches='tight')
+
+fig = plt.figure(figsize=(4.35, 5))
+plt.imshow(mask3a-mask3b)
+plt.colorbar()
+fig.savefig(op.join('examples', 'face3_mask_diff.png'), dpi=80, bbox_inches='tight')
+
 # %% Example 3 - letter a
 
 a = Image.open(op.join('img', 'a.png'))
@@ -69,10 +96,10 @@ mu_x = [20, 30, 90]
 sigma = [5, 10, 7.5]
 sh = (100, 100)
 
-masks = [bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=False),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, max_merge=True),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, max_merge=False),
-         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, max_merge=True)]
+masks = [bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=False),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=True, sum_merge=True),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, sum_merge=False),
+         bubbles.build_mask(mu_y, mu_x, sigma, sh, scale=False, sum_merge=True)]
 
 for i in range(4):
     fig = plt.figure(figsize=(3, 2.5))

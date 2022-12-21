@@ -1,9 +1,10 @@
 from PIL import Image
 import numpy as np
 from scipy.stats import norm
+from scipy.ndimage import gaussian_filter
 from skimage.morphology import binary_dilation
 
-def build_mask(mu_y, mu_x, sigma, sh, scale, max_merge):
+def build_mask(mu_y, mu_x, sigma, sh, scale, sum_merge):
     """Build a Bubbles mask which can be applied to an image of shape `sh`. Returns a matrix for the mask.
     
      Keyword arguments:
@@ -12,7 +13,7 @@ def build_mask(mu_y, mu_x, sigma, sh, scale, max_merge):
     sigma -- array of sigmas for the spread of the bubbles (should be same len as mu_y)
     sh -- shape (np.shape) of the desired mask (usually the shape of the respective image)
     scale -- should densities' maxima be consistently scaled across different sigma values?
-    max_merge -- should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If False, distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.
+    sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
     """
     # check lengths match and are all 1d
     gauss_pars_sh = [np.shape(x) for x in [mu_y, mu_x, sigma]]
@@ -31,23 +32,64 @@ def build_mask(mu_y, mu_x, sigma, sh, scale, max_merge):
         for i in range(len(mu_y))
         ]
     
-    # scale if requested
+    # scale all bubbles consistently if requested
     if scale:
         dists = [x/np.max(x) for x in dists]
     
-    if max_merge:
-        # build mask from list of bubbles
-        mask = np.max(dists, axis=0)
-        
-    else:
+    if sum_merge:
         # sum the distributions, then threshold the maximum to the maximum peak
         mask = np.sum(dists, axis=0)
         mask[mask>np.max(dists)] = np.max(dists)
-        
-    # scale density to within [0, 1] (will already be scaled to [0, 1] above if scale==True)
-    if not scale:
-        mask /= np.max(mask)
+
+    else:
+        # merge using average of densities
+        mask = np.mean(dists, axis=0)
     
+    # scale density to within [0, 1] (will already be scaled to [0, 1] above if scale==True)
+    mask /= np.max(mask)
+    
+    return(mask)
+
+def build_conv_mask(mu_y, mu_x, sigma, sh):
+    """
+    Build a Bubbles mask via convolution which can be applied to an image of shape `sh`. Returns a matrix for the mask.
+    Unlike build_mask(), build_conv_mask() requires that all sigma values are equal.
+    
+     Keyword arguments:
+    mu_y -- the locations of the bubbles centres, in numpy axis 0. Must be integers (will be rounded otherwise)
+    mu_x -- the locations of the bubbles centres, in numpy axis 1 (should be same len as mu_y). Must be integers (will be rounded otherwise)
+    sigma -- a single value for sigma, or else an array of sigmas for the spread of the bubbles (in which case, should be same len as mu_y, and should all be identical)
+    sh -- shape (np.shape) of the desired mask (usually the shape of the respective image)
+    """
+    # if sigma is given as a list, get the single value
+    if isinstance(sigma, list) | isinstance(sigma, np.ndarray):
+        sigma = np.unique(sigma)
+    
+    # if more than one sigma value, give error
+    if len(sigma)>1:
+        ValueError('for the convolution approach, sigma should be of length one, or else all values should be identical')
+
+    # check lengths for mu match and are both 1d
+    gauss_pars_sh = [np.shape(x) for x in [mu_y, mu_x]]
+    gauss_pars_n_dims = [len(x) for x in gauss_pars_sh]
+    
+    if len(set(gauss_pars_sh))!=1 or any(gauss_pars_n_dims)!=1:
+        ValueError('mu_y and mu_x should both be 1-dimensional arrays of identical length')
+
+    # generate the pre-convolution mask
+    mask_preconv = np.zeros(sh)
+
+    mask_preconv[
+        np.array(mu_y).astype(int),
+        np.array(mu_x).astype(int)
+        ] = 1
+
+    # apply the filter via scipy.signal.gaussian_filter (uses a series of 1d convolutions)
+    mask = gaussian_filter(mask_preconv, sigma=float(sigma), mode='constant', cval=0.0)
+
+    # scale the mask
+    mask /= np.max(mask)
+
     return(mask)
 
 
@@ -84,7 +126,7 @@ def apply_mask(im, mask, bg=0):
     return(im_out_mat)
 
 
-def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0, scale=True, max_merge=False):
+def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0, scale=True, sum_merge=False):
     """Apply the bubbles mask to a given PIL image. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
@@ -94,7 +136,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0
     sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from this array
     bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values, for RGBA
     scale -- should densities' maxima be consistently scaled across different sigma values?
-    max_merge -- should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If False (the default), distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.
+    sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
     """
     
     n = len(sigma)  # get n bubbles
@@ -108,7 +150,7 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0
         mu_x = np.random.uniform(low=0, high=sh[1], size=n)
     
     # build mask
-    mask = build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale, max_merge=max_merge)
+    mask = build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale, sum_merge=sum_merge)
     
     # apply mask
     im_out_mat = apply_mask(im=im, mask=mask, bg=bg)
@@ -118,7 +160,39 @@ def bubbles_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0
     return(im_out, mask, mu_x, mu_y, sigma)
 
 
-def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=0, scale=True, max_merge=False, max_sigma_from_nonzero=np.Infinity):
+def bubbles_conv_mask (im, mu_x=None, mu_y=None, sigma=np.repeat(25, repeats=5), bg=0):
+    """Apply the bubbles mask generated via convolution to a given PIL image. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
+    
+     Keyword arguments:
+    im -- the PIL image to apply the bubbles mask to
+    mu_x -- x indices (axis 1 in numpy) for bubble locations - set to None (default) for random location. Must be integers (will be rounded otherwise)
+    mu_y -- y indices (axis 0 in numpy) for bubble locations - set to None (default) for random location. Must be integers (will be rounded otherwise)
+    sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from this array, but all values should be identical for this method
+    bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB, or 4 values, for RGBA
+    """
+    
+    n = len(sigma)  # get n bubbles
+    sh = np.asarray(im).shape  # get shape
+    
+    # generate distributions' locations
+    if mu_y is None:
+        mu_y = np.random.randint(low=0, high=sh[0], size=n)
+    
+    if mu_x is None:
+        mu_x = np.random.randint(low=0, high=sh[1], size=n)
+    
+    # build mask
+    mask = build_conv_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh)
+    
+    # apply mask
+    im_out_mat = apply_mask(im=im, mask=mask, bg=bg)
+    
+    im_out = Image.fromarray(np.uint8(im_out_mat))
+    
+    return(im_out, mask, mu_x, mu_y, sigma)
+
+
+def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=0, scale=True, sum_merge=False, max_sigma_from_nonzero=np.Infinity):
     """Apply the bubbles mask to a given PIL image, restricting the possible locations of the bubbles' centres to be within a given multiple of non-zero pixels. The image will be binarised to be im<=bg gives 0, else 1, so binary dilation can be applied. Returns the edited PIL image, the generated mask, mu_y, mu_x, and sigma.
     
      Keyword arguments:
@@ -127,7 +201,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=
     sigma -- array of sigmas for the spread of the bubbles. `n` is inferred from this array
     bg -- value for the background, from 0 to 255. Can also be an array of 3 values from 0 to 255, for RGB
     scale -- should densities' maxima be consistently scaled across different sigma values?
-    max_merge -- should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If False (the default), distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.
+    sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If False (the default), densities are instead averaged (mean).
     max_sigma_from_nonzero -- maximum multiples of the given sigma value from the nearest nonzero (in practice, non-minimum) values that a bubble's centre can be. Can be `np.Infinity` for no restriction
     """
     
@@ -171,7 +245,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=
     mu_x = [int(poss_mu[i][1][mu_idx[i]]) for i in range(len(poss_mu))] + np.random.uniform(low=-0.5, high=0.5, size=len(mu_idx))
     
     # build mask
-    mask = build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale, max_merge=max_merge)
+    mask = build_mask(mu_y=mu_y, mu_x=mu_x, sigma=sigma, sh=sh, scale=scale, sum_merge=sum_merge)
     
     # apply mask
     im_out_mat = apply_mask(im=im, mask=mask, bg=bg)
@@ -203,7 +277,7 @@ if __name__ == "__main__":
     parser.add_argument('--unscaled', help='do not scale the densities of the bubbles to have the same maxima',
                         action='store_false')
     
-    parser.add_argument('--maxmerge', help='should merges, where bubbles overlap, be completed using a simple max of the two bubbles? If not (the default), distributions are instead summed, and then thresholded to the maxima of the pre-merged bubbles.',
+    parser.add_argument('--summerge', help='sum_merge -- should merges, where bubbles overlap, be completed using a simple sum of the bubbles, thresholded to the maxima of the pre-merged bubbles? If not (the default), densities are instead averaged (mean).',
                         action='store_true')
     
     parser.add_argument('--seed', help='random seed to use', action='store', type=int)
@@ -214,7 +288,7 @@ if __name__ == "__main__":
         np.random.seed(args.seed)
     
     im = Image.open(args.input)
-    im_out = bubbles_mask(im=im, mu_x=args.mu_x, mu_y=args.mu_y, sigma=args.sigma, bg=args.background, scale=args.unscaled, max_merge=args.maxmerge)[0]
+    im_out = bubbles_mask(im=im, mu_x=args.mu_x, mu_y=args.mu_y, sigma=args.sigma, bg=args.background, scale=args.unscaled, sum_merge=args.summerge)[0]
     im_out.save(args.output)
     
     
