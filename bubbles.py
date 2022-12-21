@@ -240,7 +240,7 @@ def bubbles_mask_nonzero (im, ref_im=None, sigma = np.repeat(25, repeats=5), bg=
     # get mu locations for each bubble, as an index in the possible mu values
     mu_idx = [np.random.randint(low=0, high=len(x[0]), size=1) for x in poss_mu]
     
-    # get actual mu values as index plus uniform noise between -0.5 and 0.5 (rather than all mus being on integers)
+    # generate actual mu values as index plus uniform noise between -0.5 and 0.5 (rather than all mus being on integers)
     mu_y = [int(poss_mu[i][0][mu_idx[i]]) for i in range(len(poss_mu))] + np.random.uniform(low=-0.5, high=0.5, size=len(mu_idx))
     mu_x = [int(poss_mu[i][1][mu_idx[i]]) for i in range(len(poss_mu))] + np.random.uniform(low=-0.5, high=0.5, size=len(mu_idx))
     
