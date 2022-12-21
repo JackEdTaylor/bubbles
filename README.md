@@ -143,7 +143,7 @@ a.show(); a1.show()
 ![](img/a.png)
 ![](examples/a1.png)
 
-Here is a snippet demonstrating that `bubbles_mask_nonzero()` only selects bubble locations whose centres are <=`max_sigma_from_nonzero` standard deviations of the non-background pixels. This shows 100 bubbles (in blue) superimposed on the letter *a* (in red), with bubbles' centres at a maximum distance of 0.2 standard deviations from the character.
+Here is a snippet demonstrating that `bubbles_mask_nonzero()` only selects bubble locations whose centres are <=`max_sigma_from_nonzero` standard deviations of the non-background pixels. This shows 1000 bubbles (in blue) superimposed on the letter *a* (in red), with bubbles' centres at a maximum distance of 1 standard deviations from the character.
 
 ```python
 a2, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask_nonzero(
