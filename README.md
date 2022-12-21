@@ -147,7 +147,7 @@ Here is a snippet demonstrating that `bubbles_mask_nonzero()` only selects bubbl
 
 ```python
 a2, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask_nonzero(
-    im=a, sigma=np.repeat(3, repeats=150), bg=127, max_sigma_from_nonzero=1
+    im=a, sigma=np.repeat(3, repeats=1000), bg=127, max_sigma_from_nonzero=1
 )
 
 a_arr = np.asarray(a).copy()
