@@ -14,11 +14,11 @@ import os.path as op
 from PIL import Image
 ```
 
-`bubbles_mask()` is the main function, which generates and applies a mask with `len(sigma)` bubbles to a PIL image. By default, these will be positioned randomly. Here, we add 5 bubbles, all of sigma=20 to an image of a face on grey background.
+`bubbles_mask()` is the main function, which generates and applies a mask with `len(sigma)` bubbles to a PIL image. By default, these will be positioned randomly. Here, we add 5 bubbles, of various sigmas, to an image of a face on grey background.
 
 ```python
 face = Image.open(op.join('img', 'face.png'))
-face1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask(im=face, sigma=[20,20,20,20,20], bg=127)
+face1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask(im=face, sigma=[17, 19, 20.84, 25, 30], bg=127)
 
 face.show(); face1.show()
 ```
@@ -59,7 +59,7 @@ print(sigma)
 ```
 
 ```
-[20, 20, 20, 20, 20]
+[17, 19, 20.84, 25, 30]
 ```
 
 ## Specifying Bubble Locations

@@ -12,7 +12,7 @@ np.random.seed(152872)
 
 face = Image.open(op.join('img', 'face.png'))
 
-face1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask(im=face, sigma=[20,20,20,20,20], bg=127)
+face1, mask, mu_x, mu_y, sigma = bubbles.bubbles_mask(im=face, sigma=[17, 19, 20.84, 25, 30], bg=127)
 
 print(mu_x)
 print(mu_y)
