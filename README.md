@@ -111,7 +111,7 @@ plt.imshow(mask3b); plt.colorbar()
 ![](examples/face3a_mask.png)
 ![](examples/face3b_mask.png)
 
-There are only small differences in the approaches, owing to (I think?) imprecision in the FFT:
+There are only small differences in the approaches, owing to (I think?) differences in precision:
 
 ```python
 plt.imshow(mask3a-mask3b)
@@ -120,7 +120,7 @@ plt.colorbar()
 
 ![](examples/face3_mask_diff.png)
 
-This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities is (i) more precise, and (ii) supports bubbles of different sizes.
+This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities is (i) more precise in specifying mu, and (ii) supports bubbles of different sizes.
 
 ## Avoiding Uninformative Locations
 
