@@ -120,7 +120,7 @@ plt.colorbar()
 
 ![](examples/face3_mask_diff.png)
 
-This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities is (a) more precise, and (b) supports bubbles of different sizes.
+This means that with reasonable rounding of the masks, the approaches would be functionally equivalent, except that the method using the outer product of densities is (i) more precise, and (ii) supports bubbles of different sizes.
 
 ## Avoiding Uninformative Locations
 
