@@ -107,3 +107,38 @@ for i in range(4):
     plt.colorbar()
     fig.savefig(op.join('examples', f'mask{i+1}.png'), dpi=100, bbox_inches='tight')
 
+# %% Compare timing for convolution and outer product approaches
+
+import time
+from tqdm import tqdm
+
+n_iter = 1000
+sigma = 2.5
+sh = (1000, 1000)  # shape of the desired masks
+n_bubbles = 100
+
+conv_times = []
+op_times = []
+
+for i in tqdm(range(n_iter), desc='Timing approaches'):
+    # select locations from uniform distribution of integers
+    mu_x = np.random.randint(sh[1], size=n_bubbles)
+    mu_y = np.random.randint(sh[0], size=n_bubbles)
+    # time convolution approach
+    conv_s = time.process_time()
+    conv_m = bubbles.build_conv_mask(mu_x=mu_x, mu_y=mu_y, sigma=[sigma], sh=sh)
+    conv_e = time.process_time()
+    conv_times.append(conv_e-conv_s)
+    # time outer product approach
+    op_s = time.process_time()
+    op_m = bubbles.build_mask(mu_x=mu_x, mu_y=mu_y, sigma=[sigma], sh=sh, scale=True, sum_merge=False)
+    op_e = time.process_time()
+    op_times.append(op_e-op_s)
+
+# get difference
+diffs = np.array(conv_times)-np.array(op_times)
+mean_diff = np.mean(diffs)
+sd_diff = np.std(diffs)
+comp_word = "faster" if mean_diff>0 else "slower"
+
+print(f'The outer product approach was M={np.abs(np.round(mean_diff*1000, 2))} (SD={np.round(sd_diff*1000, 2)}) milliseconds {comp_word}')
