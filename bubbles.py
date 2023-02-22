@@ -26,10 +26,10 @@ def build_mask(mu_y, mu_x, sigma, sh, scale, sum_merge):
     dists = [
         # get the outer product of vectors for the densities of pixel indices across x and y dimensions, for each distribution (provides 2d density)
         np.outer(
-            norm.pdf(np.arange(stop=sh[0]), mu_y[i], sigma[i]),
-            norm.pdf(np.arange(stop=sh[1]), mu_x[i], sigma[i])
+            norm.pdf(np.arange(stop=sh[0]), mu_y_i, sigma_i),
+            norm.pdf(np.arange(stop=sh[1]), mu_x_i, sigma_i)
             )
-        for i in range(len(mu_y))
+        for mu_x_i, mu_y_i, sigma_i in zip(mu_x, mu_y, sigma)
         ]
     
     # scale all bubbles consistently if requested
