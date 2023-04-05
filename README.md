@@ -81,7 +81,7 @@ face2.show()
 ## Using a Convolution-Based Method
 
 Previous implementations I've seen have used a convolution-based approach, where bubble locations are convolved with a Gaussian kernel. This is also available, with the `build_conv_mask()` and `bubbles_conv_mask()` functions. Key differences are that:
-* Sigma values must be identical for all bubbles, as one kernel is applied globally
+* Sigma values must be identical for all bubbles, as one kernel is applied globally (could alternatively average over multiple per-sigma convolutions)
 * Locations of `x` and `y` must be integers (rounded if floats) so that bubble precision is limited by resolution of the image
 
 Here is a comparison of the methods:
@@ -113,7 +113,7 @@ plt.imshow(mask3b); plt.colorbar()
 ![](examples/face3a_mask.png)
 ![](examples/face3b_mask.png)
 
-There are only small differences in the approaches, owing to (I think?) differences in precision:
+There are only small differences in the approaches, owing to (I think?) floating point precision:
 
 ```python
 plt.imshow(mask3a-mask3b)
